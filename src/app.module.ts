@@ -1,12 +1,21 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, RequestMethod } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaService } from './prisma/prisma.service';
 import { UserModule } from './user/user.module';
+import { ConversationAuthMiddleware } from './middleware/conversation-auth.middleware';
+import { MessagesModule } from './messages/messages.module';
 
 @Module({
-  imports: [UserModule],
+  imports: [UserModule, MessagesModule],
   controllers: [AppController],
   providers: [AppService, PrismaService],
 })
-export class AppModule {}
+export class AppModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(ConversationAuthMiddleware).forRoutes({
+      path: 'api/v1.0.0/get-messages/:conversationId',
+      method: RequestMethod.GET,
+    });
+  }
+}

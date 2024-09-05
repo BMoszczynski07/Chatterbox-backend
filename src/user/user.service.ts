@@ -13,9 +13,10 @@ import * as jwt from 'jsonwebtoken';
 export class UserService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async login(user: UserLoginDTO): Promise<{ user: Users; token: string }> {
-    const { login, password } = user;
-
+  async login({
+    login,
+    password,
+  }: UserLoginDTO): Promise<{ user: Users; token: string }> {
     if (!login || !password) {
       throw new BadRequestException('All fields are required');
     }

@@ -64,10 +64,11 @@ model MessageViews {
 }
 
 model ConversationParticipants {
-  id              Int @id @default(autoincrement())
   user_id         Int
   conversation_id Int
 
   conversationparticipants_user         Users         @relation(fields: [user_id], references: [id])
   conversationparticipants_conversation Conversations @relation(fields: [conversation_id], references: [id])
+
+  @@id([user_id, conversation_id])
 }

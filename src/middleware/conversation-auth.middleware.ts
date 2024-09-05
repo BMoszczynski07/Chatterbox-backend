@@ -3,7 +3,7 @@ import {
   NestMiddleware,
   UnauthorizedException,
 } from '@nestjs/common';
-import { NextFunction } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import * as jwt from 'jsonwebtoken';
 import { PrismaService } from 'src/prisma/prisma.service';
 
@@ -12,7 +12,7 @@ export class ConversationAuthMiddleware implements NestMiddleware {
   constructor(private readonly prisma: PrismaService) {}
 
   async use(req: Request, res: Response, next: NextFunction) {
-    const authHeader = req.headers.get('authorization');
+    const authHeader = req.header('authorization');
 
     if (!authHeader) {
       throw new UnauthorizedException('No authorization header provided.');
@@ -31,12 +31,18 @@ export class ConversationAuthMiddleware implements NestMiddleware {
     }
 
     const userId = decoded.unique_id;
-    const { conversationId } = req['conversationId'];
+    const { conversationId } = req.params;
+
+    const { id } = await this.prisma.users.findFirst({
+      where: {
+        unique_id: userId,
+      },
+    });
 
     const participant = await this.prisma.conversationParticipants.findFirst({
       where: {
         conversation_id: Number(conversationId),
-        user_id: Number(userId),
+        user_id: id,
       },
     });
 
