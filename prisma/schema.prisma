@@ -21,4 +21,53 @@ model Users {
   create_date DateTime
   email       String   @db.VarChar(40)
   verified    Boolean  @default(false) @db.TinyInt
+  socket_id   String   @db.VarChar(30)
+  profile_pic String   @db.VarChar(60)
+
+  Messages                 Messages[]
+  MessageViews             MessageViews[]
+  ConversationParticipants ConversationParticipants[]
+}
+
+model Conversations {
+  id          Int     @id @default(autoincrement())
+  title       String?
+  is_group    Boolean @default(false)
+  group_pic   String?
+  description String?
+
+  Messages                 Messages[]
+  ConversationParticipants ConversationParticipants[]
+}
+
+model Messages {
+  id              Int            @id @default(autoincrement())
+  conversation_id Int
+  user_id         Int
+  message_date    DateTime
+  content         String         @db.Text
+  messageViews    MessageViews[]
+
+  messages_conversation Conversations @relation(fields: [conversation_id], references: [id])
+  messages_user         Users         @relation(fields: [user_id], references: [id])
+}
+
+model MessageViews {
+  id         Int @id @default(autoincrement())
+  message_id Int
+  user_id    Int
+
+  messageviews_message Messages @relation(fields: [message_id], references: [id])
+  messageviews_user    Users    @relation(fields: [user_id], references: [id])
+
+  @@unique([message_id, user_id])
+}
+
+model ConversationParticipants {
+  id              Int @id @default(autoincrement())
+  user_id         Int
+  conversation_id Int
+
+  conversationparticipants_user         Users         @relation(fields: [user_id], references: [id])
+  conversationparticipants_conversation Conversations @relation(fields: [conversation_id], references: [id])
 }
