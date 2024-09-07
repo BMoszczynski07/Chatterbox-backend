@@ -3,7 +3,7 @@ import { Users } from '@prisma/client';
 import UserLoginDTO from 'src/classes/UserLoginDTO';
 import { UserService } from './user.service';
 
-@Controller('/api/v1.0.0')
+@Controller('/api/v1.0.0/user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 

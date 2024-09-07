@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { Users } from '@prisma/client';
@@ -26,7 +27,7 @@ export class UserService {
     });
 
     if (!findUser) {
-      throw new BadRequestException('User not found');
+      throw new NotFoundException('User not found in our database');
     }
 
     const isPasswordCorrect = await this.validateUserPassword(

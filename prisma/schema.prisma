@@ -41,12 +41,15 @@ model Conversations {
 }
 
 model Messages {
-  id              Int            @id @default(autoincrement())
+  id              Int      @id @default(autoincrement())
   conversation_id Int
   user_id         Int
   message_date    DateTime
-  content         String         @db.Text
-  messageViews    MessageViews[]
+  content         String?  @db.Text
+  type            String?  @db.VarChar(20)
+  img_src         String?  @db.VarChar(100)
+
+  messageViews MessageViews[]
 
   messages_conversation Conversations @relation(fields: [conversation_id], references: [id])
   messages_user         Users         @relation(fields: [user_id], references: [id])
