@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Injectable,
   NestMiddleware,
   UnauthorizedException,
@@ -11,8 +12,8 @@ export class JwtMiddleware implements NestMiddleware {
   use(req: Request, res: Response, next: NextFunction) {
     const authHeader = req.headers['authorization'];
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      throw new UnauthorizedException('No token provided!');
+    if (authHeader === `Bearer ${null}` || !authHeader.startsWith('Bearer ')) {
+      throw new BadRequestException('No token provided!');
     }
 
     const token = authHeader.split(' ')[1];
