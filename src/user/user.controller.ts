@@ -1,4 +1,12 @@
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Post,
+  Req,
+} from '@nestjs/common';
 import { Users } from '@prisma/client';
 import UserLoginDTO from 'src/classes/UserLoginDTO';
 import { UserService } from './user.service';
@@ -14,6 +22,18 @@ export class UserController {
   ): Promise<{ user: Users; token: string }> {
     try {
       return await this.userService.login(userLoginDto);
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  @Get('/get')
+  @HttpCode(HttpStatus.OK)
+  async getUser(@Req() req: Request): Promise<Users> {
+    try {
+      const decodedToken = req['user'];
+
+      return await this.userService.getUser(decodedToken);
     } catch (err) {
       throw err;
     }

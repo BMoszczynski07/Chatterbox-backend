@@ -14,6 +14,18 @@ import * as jwt from 'jsonwebtoken';
 export class UserService {
   constructor(private readonly prisma: PrismaService) {}
 
+  async getUser(decodedToken: { unique_id: string }): Promise<Users> {
+    const findUser = await this.prisma.users.findFirst({
+      where: { unique_id: decodedToken.unique_id },
+    });
+
+    if (!findUser) {
+      throw new NotFoundException('User not found in our database');
+    }
+
+    return findUser;
+  }
+
   async login({
     login,
     password,
@@ -46,7 +58,7 @@ export class UserService {
 
   private generateJwtToken(user: Users): string {
     const payload = { unique_id: user.unique_id };
-    const secret = process.env.SECRET_KEY;
+    const secret = process.env.JWT_SECRET_KEY;
 
     return jwt.sign(payload, secret, {
       expiresIn: process.env.JWT_EXPIRES_IN,
