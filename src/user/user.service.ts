@@ -4,15 +4,27 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { Users } from '@prisma/client';
 import UserLoginDTO from 'src/classes/UserLoginDTO';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
+import { Users } from '@prisma/client';
 
 @Injectable()
 export class UserService {
   constructor(private readonly prisma: PrismaService) {}
+
+  async unprotectedGetUser(unique_id: string): Promise<Users> {
+    const findUser = await this.prisma.users.findFirst({
+      where: { unique_id },
+    });
+
+    if (!findUser) {
+      throw new NotFoundException('User not found in our database');
+    }
+
+    return findUser;
+  }
 
   async getUser(decodedToken: { unique_id: string }): Promise<Users> {
     const findUser = await this.prisma.users.findFirst({

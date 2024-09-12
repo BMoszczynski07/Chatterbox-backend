@@ -4,6 +4,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Param,
   Post,
   Req,
 } from '@nestjs/common';
@@ -37,5 +38,13 @@ export class UserController {
     } catch (err) {
       throw err;
     }
+  }
+
+  @Get('/get-unprotected/:unique_id')
+  @HttpCode(HttpStatus.OK)
+  async unprotectedGetUser(
+    @Param('unique_id') unique_id: string,
+  ): Promise<Users> {
+    return await this.userService.unprotectedGetUser(unique_id);
   }
 }

@@ -16,13 +16,15 @@ datasource db {
 model Users {
   id          Int      @id @default(autoincrement())
   unique_id   String   @unique @db.VarChar(30)
-  name        String   @db.VarChar(50)
+  first_name  String   @db.VarChar(20)
+  last_name   String   @db.VarChar(50)
   pass        String   @db.VarChar(200)
   create_date DateTime
   email       String   @db.VarChar(40)
   verified    Boolean  @default(false) @db.TinyInt
   socket_id   String   @db.VarChar(30)
   profile_pic String   @db.VarChar(60)
+  user_desc   String   @db.VarChar(300)
 
   Messages                 Messages[]
   MessageViews             MessageViews[]
