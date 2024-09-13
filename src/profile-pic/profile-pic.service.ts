@@ -1,5 +1,11 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
+import * as fs from 'fs';
+import * as path from 'path';
 
 @Injectable()
 export class ProfilePicService {
@@ -17,6 +23,38 @@ export class ProfilePicService {
 
     if (!findUser) {
       throw new NotFoundException('User not found');
+    }
+
+    const fileNameFromURL = path.basename(findUser.profile_pic);
+
+    const filePath = path.join(
+      __dirname,
+      '..',
+      '..',
+      'static',
+      fileNameFromURL,
+    );
+
+    console.log(fileNameFromURL, filePath);
+
+    if (fs.existsSync(filePath)) {
+      try {
+        // Usunięcie pliku
+        if (fileNameFromURL.startsWith(findUser.unique_id)) {
+          fs.unlinkSync(filePath);
+          console.log(`Plik ${fileNameFromURL} został usunięty.`);
+        }
+      } catch (err) {
+        console.error(`Błąd podczas usuwania pliku: ${err}`);
+        throw new InternalServerErrorException(
+          "Couldn't set new profile picture",
+        );
+      }
+    } else {
+      console.log('Plik nie istnieje.');
+      throw new InternalServerErrorException(
+        "Couldn't set new profile picture",
+      );
     }
 
     await this.prisma.users.update({
