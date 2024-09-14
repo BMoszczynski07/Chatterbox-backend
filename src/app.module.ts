@@ -33,6 +33,10 @@ export class AppModule {
         path: '/api/v1.0.0/user/update',
         method: RequestMethod.PATCH,
       },
+      {
+        path: '/api/v1.0.0/user/change-pass',
+        method: RequestMethod.PATCH,
+      },
     );
   }
 }

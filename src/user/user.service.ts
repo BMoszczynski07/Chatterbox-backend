@@ -11,6 +11,7 @@ import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
 import { Users } from '@prisma/client';
 import { UpdatedUserDTO } from 'src/classes/UpdatedUserDTO';
+import { ChangePassDTO } from 'src/classes/ChangePassDTO';
 
 @Injectable()
 export class UserService {
@@ -51,7 +52,7 @@ export class UserService {
     });
 
     if (!userUpdate) {
-      throw new InternalServerErrorException('A server error occurred');
+      throw new NotFoundException('User not found in our database');
     }
 
     return {
@@ -111,6 +112,53 @@ export class UserService {
     const token = this.generateJwtToken(findUser);
 
     return { user: findUser, token };
+  }
+
+  async changePassword(
+    changePass: ChangePassDTO,
+    decodedToken: { unique_id: string },
+  ) {
+    if (
+      !changePass.confirm_new_pass ||
+      !changePass.cur_pass ||
+      !changePass.new_pass
+    ) {
+      throw new BadRequestException('All fields are required');
+    }
+
+    if (changePass.cur_pass === changePass.new_pass) {
+      throw new BadRequestException(
+        'Current password cannot be the same as new password',
+      );
+    }
+
+    const findUser = await this.prisma.users.findFirst({
+      where: { unique_id: decodedToken.unique_id },
+    });
+
+    if (!findUser) {
+      throw new NotFoundException('User not found in our database');
+    }
+
+    const isPasswordCorrect = await this.validateUserPassword(
+      findUser.pass,
+      changePass.cur_pass,
+    );
+
+    if (!isPasswordCorrect) {
+      throw new UnauthorizedException('Invalid password');
+    }
+
+    const hashedNewPassword = await bcrypt.hash(changePass.new_pass, 10);
+
+    await this.prisma.users.update({
+      where: { unique_id: decodedToken.unique_id },
+      data: { pass: hashedNewPassword },
+    });
+
+    return {
+      message: 'Password changed successfully',
+    };
   }
 
   private generateJwtToken(user: Users): string {

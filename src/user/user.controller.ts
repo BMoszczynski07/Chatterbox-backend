@@ -13,6 +13,7 @@ import { Users } from '@prisma/client';
 import UserLoginDTO from 'src/classes/UserLoginDTO';
 import { UserService } from './user.service';
 import { UpdatedUserDTO } from 'src/classes/UpdatedUserDTO';
+import { ChangePassDTO } from 'src/classes/ChangePassDTO';
 
 @Controller('/api/v1.0.0/user')
 export class UserController {
@@ -57,6 +58,18 @@ export class UserController {
       const decodedToken = req['user'];
 
       return await this.userService.updateUser(updatedUser, decodedToken);
+    } catch (err: any) {
+      throw err;
+    }
+  }
+
+  @Patch('/change-pass')
+  @HttpCode(HttpStatus.OK)
+  async changePassword(@Req() req: Request, @Body() changePass: ChangePassDTO) {
+    try {
+      const decodedToken = req['user'];
+
+      return await this.userService.changePassword(changePass, decodedToken);
     } catch (err: any) {
       throw err;
     }
