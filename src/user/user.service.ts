@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -9,10 +10,54 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
 import { Users } from '@prisma/client';
+import { UpdatedUserDTO } from 'src/classes/UpdatedUserDTO';
 
 @Injectable()
 export class UserService {
   constructor(private readonly prisma: PrismaService) {}
+
+  async updateUser(
+    updatedUser: UpdatedUserDTO,
+    decodedToken: { unique_id: string },
+  ) {
+    if (updatedUser.unique_id !== updatedUser.unique_id.toLowerCase()) {
+      throw new BadRequestException('Invalid login');
+    }
+
+    if (updatedUser.unique_id.length < 4 || updatedUser.unique_id.length > 30) {
+      throw new BadRequestException('Invalid length of login');
+    }
+
+    if (
+      updatedUser.first_name.length < 2 ||
+      updatedUser.first_name.length > 20
+    ) {
+      throw new BadRequestException('Invalid length of first name');
+    }
+
+    if (updatedUser.last_name.length < 2 || updatedUser.last_name.length > 50) {
+      throw new BadRequestException('Invalid length of last name');
+    }
+
+    if (updatedUser.user_desc.length > 300) {
+      throw new BadRequestException('Invalid length of description');
+    }
+
+    const userUpdate = await this.prisma.users.update({
+      where: {
+        unique_id: decodedToken.unique_id,
+      },
+      data: updatedUser,
+    });
+
+    if (!userUpdate) {
+      throw new InternalServerErrorException('A server error occurred');
+    }
+
+    return {
+      message: 'User information updated successfully',
+    };
+  }
 
   async unprotectedGetUser(unique_id: string): Promise<Users> {
     const findUser = await this.prisma.users.findFirst({

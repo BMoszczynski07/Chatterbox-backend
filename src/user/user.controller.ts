@@ -5,12 +5,14 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  Patch,
   Post,
   Req,
 } from '@nestjs/common';
 import { Users } from '@prisma/client';
 import UserLoginDTO from 'src/classes/UserLoginDTO';
 import { UserService } from './user.service';
+import { UpdatedUserDTO } from 'src/classes/UpdatedUserDTO';
 
 @Controller('/api/v1.0.0/user')
 export class UserController {
@@ -46,5 +48,17 @@ export class UserController {
     @Param('unique_id') unique_id: string,
   ): Promise<Users> {
     return await this.userService.unprotectedGetUser(unique_id);
+  }
+
+  @Patch('/update')
+  @HttpCode(HttpStatus.OK)
+  async updateUser(@Req() req: Request, @Body() updatedUser: UpdatedUserDTO) {
+    try {
+      const decodedToken = req['user'];
+
+      return await this.userService.updateUser(updatedUser, decodedToken);
+    } catch (err: any) {
+      throw err;
+    }
   }
 }

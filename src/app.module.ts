@@ -29,6 +29,10 @@ export class AppModule {
         path: '/api/v1.0.0/profile-pic/img',
         method: RequestMethod.POST,
       },
+      {
+        path: '/api/v1.0.0/user/update',
+        method: RequestMethod.PATCH,
+      },
     );
   }
 }
