@@ -25,6 +25,7 @@ model Users {
   socket_id   String   @db.VarChar(30)
   profile_pic String   @db.VarChar(60)
   user_desc   String   @db.VarChar(300)
+  is_active   Boolean  @default(false)
 
   Messages                 Messages[]
   MessageViews             MessageViews[]

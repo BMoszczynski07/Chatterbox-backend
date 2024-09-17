@@ -191,12 +191,36 @@ export class UserService {
   async updateSocketId(socketId: string, decodedToken: { unique_id: string }) {
     await this.prisma.users.update({
       where: { unique_id: decodedToken.unique_id },
-      data: { socket_id: socketId },
+      data: { socket_id: socketId, is_active: true },
     });
 
     return {
       message: 'Socket id updated successfully',
     };
+  }
+
+  async activeUsers(userId: string) {
+    const parsedUserId = parseInt(userId);
+
+    const activeUsersInSameConversation = await this.prisma.users.findMany({
+      where: {
+        is_active: true,
+        id: { not: parsedUserId },
+        ConversationParticipants: {
+          some: {
+            conversationparticipants_conversation: {
+              ConversationParticipants: {
+                some: {
+                  user_id: parsedUserId, // Sprawdzamy, czy są w tej samej konwersacji co userId
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return activeUsersInSameConversation;
   }
 
   hashPassword(password: string) {

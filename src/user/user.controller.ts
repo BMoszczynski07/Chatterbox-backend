@@ -4,6 +4,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  InternalServerErrorException,
   Param,
   Patch,
   Post,
@@ -86,6 +87,7 @@ export class UserController {
   }
 
   @Patch('/update-socket-id/:socketId')
+  @HttpCode(HttpStatus.OK)
   updateSocketId(
     @Req() req: Request,
     @Param('socketId') socketId: string,
@@ -95,6 +97,15 @@ export class UserController {
 
       return this.userService.updateSocketId(socketId, decodedToken);
     } catch (err: any) {
+      throw err;
+    }
+  }
+
+  @Get('/active-users/:userId')
+  activeUsers(@Param('userId') userId: string) {
+    try {
+      return this.userService.activeUsers(userId);
+    } catch (err) {
       throw err;
     }
   }
