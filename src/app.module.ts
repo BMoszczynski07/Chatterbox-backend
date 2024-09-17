@@ -7,9 +7,10 @@ import { ConversationAuthMiddleware } from './middleware/conversation-auth.middl
 import { MessagesModule } from './messages/messages.module';
 import { JwtMiddleware } from './jwt/jwt.middleware';
 import { ProfilePicModule } from './profile-pic/profile-pic.module';
+import { GatewayModule } from './gateway/gateway.module';
 
 @Module({
-  imports: [UserModule, MessagesModule, ProfilePicModule],
+  imports: [UserModule, MessagesModule, ProfilePicModule, GatewayModule],
   controllers: [AppController],
   providers: [AppService, PrismaService],
 })

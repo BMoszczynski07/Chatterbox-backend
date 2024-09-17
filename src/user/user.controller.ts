@@ -74,4 +74,14 @@ export class UserController {
       throw err;
     }
   }
+
+  @Get('/test/hash-password/:password')
+  @HttpCode(HttpStatus.OK)
+  hashPassword(@Param('password') password: string) {
+    try {
+      return this.userService.hashPassword(password);
+    } catch (err: any) {
+      throw err;
+    }
+  }
 }

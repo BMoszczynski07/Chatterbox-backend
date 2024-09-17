@@ -128,7 +128,34 @@ export class UserService {
 
     if (changePass.cur_pass === changePass.new_pass) {
       throw new BadRequestException(
-        'Current password cannot be the same as new password',
+        'The new password cannot be the same as the current password',
+      );
+    }
+
+    if (changePass.new_pass !== changePass.confirm_new_pass) {
+      throw new BadRequestException(
+        'The new password and confirmation do not match',
+      );
+    }
+
+    if (!this.containsSpecialChar(changePass.new_pass)) {
+      throw new BadRequestException(
+        'The new password must contain a special character',
+      );
+    }
+
+    if (changePass.new_pass.length < 8) {
+      throw new BadRequestException(
+        'The new password must be at least 8 characters long.',
+      );
+    }
+
+    if (
+      changePass.new_pass === changePass.new_pass.toLowerCase() ||
+      changePass.new_pass === changePass.new_pass.toUpperCase()
+    ) {
+      throw new BadRequestException(
+        'The new password must contain one big letter and one small letter.',
       );
     }
 
@@ -159,6 +186,15 @@ export class UserService {
     return {
       message: 'Password changed successfully',
     };
+  }
+
+  hashPassword(password: string) {
+    return bcrypt.hash(password, 10);
+  }
+
+  containsSpecialChar(str: string): boolean {
+    const specialCharsRegex = /[!@#\$%\^\&*\)\(+=._-]/;
+    return specialCharsRegex.test(str);
   }
 
   private generateJwtToken(user: Users): string {
