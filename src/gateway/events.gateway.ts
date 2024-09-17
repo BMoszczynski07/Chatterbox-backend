@@ -20,14 +20,4 @@ export class EventsGateway implements OnModuleInit {
       console.log('Connected');
     });
   }
-
-  @SubscribeMessage('message')
-  message(@MessageBody() body: any) {
-    console.log(body);
-
-    this.server.emit('message', {
-      msg: 'new message',
-      content: body,
-    });
-  }
 }

@@ -84,4 +84,18 @@ export class UserController {
       throw err;
     }
   }
+
+  @Patch('/update-socket-id/:socketId')
+  updateSocketId(
+    @Req() req: Request,
+    @Param('socketId') socketId: string,
+  ): Promise<{ message: string }> {
+    try {
+      const decodedToken = req['user'];
+
+      return this.userService.updateSocketId(socketId, decodedToken);
+    } catch (err: any) {
+      throw err;
+    }
+  }
 }

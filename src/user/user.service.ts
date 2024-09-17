@@ -188,6 +188,17 @@ export class UserService {
     };
   }
 
+  async updateSocketId(socketId: string, decodedToken: { unique_id: string }) {
+    await this.prisma.users.update({
+      where: { unique_id: decodedToken.unique_id },
+      data: { socket_id: socketId },
+    });
+
+    return {
+      message: 'Socket id updated successfully',
+    };
+  }
+
   hashPassword(password: string) {
     return bcrypt.hash(password, 10);
   }
