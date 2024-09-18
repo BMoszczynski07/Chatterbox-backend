@@ -109,4 +109,15 @@ export class UserController {
       throw err;
     }
   }
+
+  @Patch('/unset-active')
+  unsetActive(@Req() req: Request) {
+    try {
+      const decodedToken = req['user'];
+
+      return this.userService.unsetActive(decodedToken);
+    } catch (err) {
+      throw err;
+    }
+  }
 }

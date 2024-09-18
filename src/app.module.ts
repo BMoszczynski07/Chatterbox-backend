@@ -42,6 +42,10 @@ export class AppModule {
         path: '/api/v1.0.0/user/update-socket-id/:socketId',
         method: RequestMethod.PATCH,
       },
+      {
+        path: '/api/v1.0.0/user/unset-active',
+        method: RequestMethod.PATCH,
+      },
     );
   }
 }

@@ -223,6 +223,43 @@ export class UserService {
     return activeUsersInSameConversation;
   }
 
+  async unsetActive(decodedToken: { unique_id: string }) {
+    const updateUser = await this.prisma.users.update({
+      where: { unique_id: decodedToken.unique_id },
+      data: { is_active: false },
+    });
+
+    if (!updateUser) {
+      throw new InternalServerErrorException('Error updating user');
+    }
+
+    return {
+      message: 'Users active status set to false',
+    };
+  }
+
+  async getFriends(userPayload: any) {
+    const activeFriends = await this.prisma.users.findMany({
+      where: {
+        is_active: true,
+        id: { not: userPayload.id },
+        ConversationParticipants: {
+          some: {
+            conversationparticipants_conversation: {
+              ConversationParticipants: {
+                some: {
+                  user_id: userPayload.id,
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return activeFriends;
+  }
+
   hashPassword(password: string) {
     return bcrypt.hash(password, 10);
   }
