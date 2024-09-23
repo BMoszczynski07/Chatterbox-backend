@@ -111,6 +111,14 @@ export class UserService {
 
     const token = this.generateJwtToken(findUser);
 
+    const EXPIRES_IN = 20000;
+
+    setTimeout(() => {
+      this.unsetActive({
+        unique_id: findUser.unique_id,
+      });
+    }, EXPIRES_IN);
+
     return { user: findUser, token };
   }
 

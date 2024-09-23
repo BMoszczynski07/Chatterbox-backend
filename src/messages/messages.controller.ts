@@ -1,4 +1,4 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpStatus, Req } from '@nestjs/common';
 import { Messages } from '@prisma/client';
 import { MessagesService } from './messages.service';
 
@@ -6,12 +6,18 @@ import { MessagesService } from './messages.service';
 export class MessagesController {
   constructor(private readonly messagesService: MessagesService) {}
 
-  @Get('/get-messages/:conversationId')
-  async getMessages(
-    @Param('conversationId') conversationId: string,
-  ): Promise<Messages[]> {
-    const messages = await this.messagesService.getMessages(conversationId);
+  @Get('/get-conversations')
+  @HttpCode(HttpStatus.OK)
+  async getConversations(@Req() req: Request) {
+    try {
+      const decodedToken = req['user'];
 
-    return messages;
+      const messages =
+        await this.messagesService.getConversations(decodedToken);
+
+      return messages;
+    } catch (err) {
+      throw err;
+    }
   }
 }

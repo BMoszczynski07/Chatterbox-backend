@@ -35,8 +35,6 @@ export class EventsGateway implements OnModuleInit {
 
   @SubscribeMessage('inactive-user')
   async handleInactiveUser(@MessageBody() userPayload: any) {
-    console.log('inactive-user', userPayload);
-
     const friends = await this.userService.getFriends(userPayload);
 
     for (const friend of friends) {
