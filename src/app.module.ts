@@ -50,6 +50,10 @@ export class AppModule {
         path: '/api/v1.0.0/messages/get-conversations',
         method: RequestMethod.GET,
       },
+      {
+        path: '/api/v1.0.0/messages/get-messages/:conversation_id',
+        method: RequestMethod.GET,
+      },
     );
   }
 }

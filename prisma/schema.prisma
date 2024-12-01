@@ -51,6 +51,7 @@ model Messages {
   content         String?  @db.Text
   type            String?  @db.VarChar(20)
   img_src         String?  @db.VarChar(100)
+  responseTo      Int?
 
   messageViews MessageViews[]
 
@@ -59,7 +60,6 @@ model Messages {
 }
 
 model MessageViews {
-  id         Int @id @default(autoincrement())
   message_id Int
   user_id    Int
 
