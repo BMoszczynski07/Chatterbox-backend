@@ -4,17 +4,17 @@ import {
   Get,
   HttpCode,
   HttpStatus,
-  InternalServerErrorException,
   Param,
   Patch,
   Post,
   Req,
 } from '@nestjs/common';
-import { Users } from '@prisma/client';
 import UserLoginDTO from 'src/classes/UserLoginDTO';
 import { UserService } from './user.service';
 import { UpdatedUserDTO } from 'src/classes/UpdatedUserDTO';
 import { ChangePassDTO } from 'src/classes/ChangePassDTO';
+import { ContactSearchDTO } from 'src/classes/ContactSearchDTO';
+import { Users } from '@prisma/client';
 
 @Controller('/api/v1.0.0/user')
 export class UserController {

@@ -5,6 +5,96 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class MessagesService {
   constructor(private readonly prisma: PrismaService) {}
 
+  async getConversation(
+    decodedToken: { unique_id: string },
+    conversationId: number,
+  ) {
+    // Pobierz `user_id` na podstawie `unique_id` z tokenu
+    const user = await this.prisma.users.findUnique({
+      where: { unique_id: decodedToken.unique_id },
+      select: { id: true },
+    });
+
+    const isParticipant = await this.prisma.conversationParticipants.findFirst({
+      where: {
+        conversation_id: conversationId,
+        user_id: user.id,
+      },
+    });
+
+    if (!isParticipant) {
+      throw new Error('User is not a participant in this conversation');
+    }
+
+    const conversation = await this.prisma.conversationParticipants.findUnique({
+      where: {
+        user_id_conversation_id: {
+          // Klucz złożony
+          user_id: user.id,
+          conversation_id: conversationId,
+        },
+      },
+      select: {
+        conversationparticipants_conversation: {
+          select: {
+            id: true,
+            title: true,
+            is_group: true,
+            group_pic: true,
+            description: true,
+            ConversationParticipants: {
+              where: {
+                user_id: {
+                  not: user.id,
+                },
+              },
+              select: {
+                conversationparticipants_user: {
+                  select: {
+                    id: true,
+                    first_name: true,
+                    last_name: true,
+                    profile_pic: true,
+                    unique_id: true,
+                    create_date: true,
+                  },
+                },
+              },
+            },
+            // Pobierz ostatnią wiadomość
+            Messages: {
+              orderBy: {
+                message_date: 'desc',
+              },
+              take: 1,
+              select: {
+                id: true,
+                content: true,
+                message_date: true,
+                messages_user: {
+                  select: {
+                    id: true,
+                    first_name: true,
+                    last_name: true,
+                    unique_id: true,
+                  },
+                },
+                // Dodanie pola, które sprawdza, czy wiadomość została widziana
+                messageViews: {
+                  where: {
+                    user_id: user.id,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return conversation;
+  }
+
   async getMessages(
     decodedToken: { unique_id: string },
     conversationId: number,

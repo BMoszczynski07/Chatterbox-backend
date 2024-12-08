@@ -7,10 +7,36 @@ import {
   Req,
 } from '@nestjs/common';
 import { MessagesService } from './messages.service';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Controller('/api/v1.0.0/messages')
 export class MessagesController {
-  constructor(private readonly messagesService: MessagesService) {}
+  constructor(
+    private readonly messagesService: MessagesService,
+    private readonly prisma: PrismaService,
+  ) {}
+
+  @Get('/get-conversation/:conversation_id')
+  @HttpCode(HttpStatus.OK)
+  async getConversation(
+    @Req() req: Request,
+    @Param('conversation_id') conversationId: string,
+  ) {
+    try {
+      const decodedToken = req['user'];
+
+      const parsedConversationId = parseInt(conversationId);
+
+      const conversation = await this.messagesService.getConversation(
+        decodedToken,
+        parsedConversationId,
+      );
+
+      return conversation;
+    } catch (err) {
+      throw err;
+    }
+  }
 
   @Get('/get-conversations')
   @HttpCode(HttpStatus.OK)

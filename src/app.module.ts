@@ -8,9 +8,16 @@ import { MessagesModule } from './messages/messages.module';
 import { JwtMiddleware } from './jwt/jwt.middleware';
 import { ProfilePicModule } from './profile-pic/profile-pic.module';
 import { GatewayModule } from './gateway/gateway.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
-  imports: [UserModule, MessagesModule, ProfilePicModule, GatewayModule],
+  imports: [
+    UserModule,
+    UsersModule,
+    MessagesModule,
+    ProfilePicModule,
+    GatewayModule,
+  ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
 })
@@ -53,6 +60,14 @@ export class AppModule {
       {
         path: '/api/v1.0.0/messages/get-messages/:conversation_id',
         method: RequestMethod.GET,
+      },
+      {
+        path: '/api/v1.0.0/messages/get-conversation/:conversation_id',
+        method: RequestMethod.GET,
+      },
+      {
+        path: '/api/v1.0.0/users/create-contact/:user_id',
+        method: RequestMethod.POST,
       },
     );
   }
