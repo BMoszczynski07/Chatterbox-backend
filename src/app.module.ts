@@ -69,6 +69,10 @@ export class AppModule {
         path: '/api/v1.0.0/users/create-contact/:user_id',
         method: RequestMethod.POST,
       },
+      {
+        path: '/api/v1.0.0/users/find-contact/:friend_id',
+        method: RequestMethod.GET,
+      },
     );
   }
 }

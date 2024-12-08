@@ -5,6 +5,92 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
 
+  async findContact(friendId: number, decodedToken: { unique_id: string }) {
+    // Szukamy użytkownika na podstawie tokenu
+    const findUser = await this.prisma.users.findFirst({
+      where: { unique_id: decodedToken.unique_id },
+    });
+
+    if (!findUser) {
+      throw new NotFoundException('User not found.');
+    }
+
+    // Szukamy konwersacji, w której uczestniczą zarówno friendId, jak i findUser.id
+    const conversation = await this.prisma.conversationParticipants.findFirst({
+      where: {
+        conversationparticipants_conversation: {
+          // Filtrujemy konwersację, by uczestniczyli w niej obaj użytkownicy
+          ConversationParticipants: {
+            every: {
+              user_id: { in: [friendId, findUser.id] }, // Sprawdzamy, czy uczestniczą obaj
+            },
+          },
+        },
+      },
+      select: {
+        conversationparticipants_conversation: {
+          select: {
+            id: true,
+            title: true,
+            is_group: true,
+            group_pic: true,
+            description: true,
+            ConversationParticipants: {
+              where: {
+                user_id: {
+                  not: findUser.id, // Wykluczamy samego użytkownika
+                },
+              },
+              select: {
+                conversationparticipants_user: {
+                  select: {
+                    id: true,
+                    first_name: true,
+                    last_name: true,
+                    profile_pic: true,
+                    unique_id: true,
+                    create_date: true,
+                  },
+                },
+              },
+            },
+            // Pobieramy ostatnią wiadomość
+            Messages: {
+              orderBy: {
+                message_date: 'desc',
+              },
+              take: 1,
+              select: {
+                id: true,
+                content: true,
+                message_date: true,
+                messages_user: {
+                  select: {
+                    id: true,
+                    first_name: true,
+                    last_name: true,
+                    unique_id: true,
+                  },
+                },
+                messageViews: {
+                  where: {
+                    user_id: findUser.id,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!conversation) {
+      throw new NotFoundException('Conversation not found.');
+    }
+
+    return conversation;
+  }
+
   async createContact(user_id: number, decodedToken: { unique_id: string }) {
     const userFound = await this.prisma.users.findFirst({
       where: { unique_id: decodedToken.unique_id },
