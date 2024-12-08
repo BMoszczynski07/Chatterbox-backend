@@ -167,7 +167,7 @@ export class MessagesService {
             // Pobierz ostatnią wiadomość
             Messages: {
               orderBy: {
-                message_date: 'desc',
+                message_date: 'desc', // Porządkuj wiadomości w kolejności od najnowszej
               },
               take: 1,
               select: {
@@ -182,7 +182,6 @@ export class MessagesService {
                     unique_id: true,
                   },
                 },
-                // Dodanie pola, które sprawdza, czy wiadomość została widziana
                 messageViews: {
                   where: {
                     user_id: getUserId.id,
@@ -195,6 +194,16 @@ export class MessagesService {
       },
     });
 
-    return conversations;
+    const sortedConversations = conversations.sort((a, b) => {
+      const dateA =
+        a.conversationparticipants_conversation.Messages[0]?.message_date ||
+        new Date(0);
+      const dateB =
+        b.conversationparticipants_conversation.Messages[0]?.message_date ||
+        new Date(0);
+      return dateB.getTime() - dateA.getTime();
+    });
+
+    return sortedConversations;
   }
 }
