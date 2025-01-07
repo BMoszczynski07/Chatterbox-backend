@@ -73,6 +73,10 @@ export class AppModule {
         path: '/api/v1.0.0/users/find-contact/:friend_id',
         method: RequestMethod.GET,
       },
+      {
+        path: '/api/v1.0.0/user/delete',
+        method: RequestMethod.DELETE,
+      },
     );
   }
 }

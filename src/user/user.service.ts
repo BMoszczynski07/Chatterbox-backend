@@ -246,6 +246,20 @@ export class UserService {
     };
   }
 
+  async deleteUser(decodedToken: { unique_id: string }) {
+    const deleteUser = await this.prisma.users.delete({
+      where: { unique_id: decodedToken.unique_id },
+    });
+
+    if (!deleteUser) {
+      throw new InternalServerErrorException('Error deleting account');
+    }
+
+    return {
+      message: 'Account deleted successfully',
+    };
+  }
+
   async getFriends(userPayload: any) {
     const activeFriends = await this.prisma.users.findMany({
       where: {

@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -13,7 +14,6 @@ import UserLoginDTO from 'src/classes/UserLoginDTO';
 import { UserService } from './user.service';
 import { UpdatedUserDTO } from 'src/classes/UpdatedUserDTO';
 import { ChangePassDTO } from 'src/classes/ChangePassDTO';
-import { ContactSearchDTO } from 'src/classes/ContactSearchDTO';
 import { Users } from '@prisma/client';
 
 @Controller('/api/v1.0.0/user')
@@ -116,6 +116,17 @@ export class UserController {
       const decodedToken = req['user'];
 
       return this.userService.unsetActive(decodedToken);
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  @Delete('/delete')
+  deleteUser(@Req() req: Request) {
+    try {
+      const decodedToken = req['user'];
+
+      return this.userService.deleteUser(decodedToken);
     } catch (err) {
       throw err;
     }
