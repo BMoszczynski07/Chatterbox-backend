@@ -15,6 +15,8 @@ import { UserService } from './user.service';
 import { UpdatedUserDTO } from 'src/classes/UpdatedUserDTO';
 import { ChangePassDTO } from 'src/classes/ChangePassDTO';
 import { Users } from '@prisma/client';
+import { UserDto } from 'src/classes/UserDto';
+import { FindUserDto } from 'src/classes/FindUserDto';
 
 @Controller('/api/v1.0.0/user')
 export class UserController {
@@ -27,6 +29,16 @@ export class UserController {
   ): Promise<{ user: Users; token: string }> {
     try {
       return await this.userService.login(userLoginDto);
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  @Post('/register')
+  @HttpCode(HttpStatus.OK)
+  async register(@Body() user: UserDto) {
+    try {
+      return await this.userService.registerUser(user);
     } catch (err) {
       throw err;
     }
@@ -127,6 +139,16 @@ export class UserController {
       const decodedToken = req['user'];
 
       return this.userService.deleteUser(decodedToken);
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  @Post('/find')
+  @HttpCode(HttpStatus.OK)
+  async findUser(@Body() findUserDto: FindUserDto) {
+    try {
+      return await this.userService.findUser(findUserDto);
     } catch (err) {
       throw err;
     }

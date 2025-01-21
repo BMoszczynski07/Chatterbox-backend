@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   Get,
   HttpCode,
@@ -8,6 +9,7 @@ import {
   Req,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
+import { SearchParamDTO } from 'src/classes/SearchParamDTO';
 
 @Controller('/api/v1.0.0/users')
 export class UsersController {
@@ -28,11 +30,13 @@ export class UsersController {
     }
   }
 
-  @Get('/get-contacts/:searchParam')
+  @Post('/get-contacts')
   @HttpCode(HttpStatus.OK)
-  async getFriends(@Param('searchParam') searchParam: string) {
+  async getFriends(@Body() searchParam: SearchParamDTO) {
     try {
-      return await this.usersService.getContacts(searchParam);
+      console.log(searchParam);
+
+      return await this.usersService.getContacts(searchParam.search_param);
     } catch (err) {
       throw err;
     }

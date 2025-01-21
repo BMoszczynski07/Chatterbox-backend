@@ -12,10 +12,92 @@ import * as jwt from 'jsonwebtoken';
 import { Users } from '@prisma/client';
 import { UpdatedUserDTO } from 'src/classes/UpdatedUserDTO';
 import { ChangePassDTO } from 'src/classes/ChangePassDTO';
+import { UserDto } from 'src/classes/UserDto';
+import { FindUserDto } from 'src/classes/FindUserDto';
 
 @Injectable()
 export class UserService {
   constructor(private readonly prisma: PrismaService) {}
+
+  handleCheckLogin(unique_id: string): boolean {
+    const uniqueId = unique_id;
+
+    const alphanumericRegex = /^[a-zA-Z0-9]+$/;
+
+    if (!alphanumericRegex.test(uniqueId)) {
+      return false;
+    }
+
+    return true;
+  }
+
+  async registerUser(user: UserDto) {
+    let err = '';
+
+    if (
+      !user.unique_id ||
+      !user.firstName ||
+      !user.lastName ||
+      !user.email ||
+      !user.password
+    ) {
+      throw new BadRequestException('All fields are required');
+    }
+
+    const passRequirements = {
+      enoughLetters: user.password.length >= 8,
+      hasUppercase: user.password !== user.password.toLowerCase(),
+      hasLowercase: user.password !== user.password.toUpperCase(),
+      specialCharacter: /[!@#\$%\^\&*\)\(+=._-]/.test(user.password),
+    };
+
+    if (
+      !passRequirements.enoughLetters ||
+      !passRequirements.hasLowercase ||
+      !passRequirements.hasUppercase ||
+      !passRequirements.specialCharacter
+    ) {
+      throw new BadRequestException('Password requirements not met');
+    }
+
+    if (!user.email.includes('@') || !user.email.includes('.')) {
+      throw new BadRequestException('Invalid email');
+    }
+
+    if (!this.handleCheckLogin(user.unique_id)) {
+      throw new BadRequestException(
+        'Invalid login (only alphanumeric characters)',
+      );
+      return;
+    }
+
+    const hashedPassword = await bcrypt.hash(user.password, 10);
+
+    const newUser = await this.prisma.users.create({
+      data: {
+        unique_id: user.unique_id.toLowerCase(),
+        first_name: user.firstName,
+        last_name: user.lastName,
+        email: user.email,
+        pass: hashedPassword,
+        user_desc: '',
+        create_date: new Date(),
+        verified: false,
+        profile_pic: `${process.env.BACKEND_URL}/static/${user.firstName.charAt(0).toLowerCase()}.png`,
+        is_active: false,
+        socket_id: '',
+      },
+    });
+
+    if (!newUser) {
+      throw new InternalServerErrorException('Failed to create user');
+    }
+
+    return {
+      message:
+        'Account created successfully. Click a link sent to your email address in order to verify yout account.',
+    };
+  }
 
   async updateUser(
     updatedUser: UpdatedUserDTO,
@@ -280,6 +362,17 @@ export class UserService {
     });
 
     return activeFriends;
+  }
+
+  async findUser(findUserDto: FindUserDto) {
+    const findUser: Users[] = await this.prisma
+      .$queryRaw`select * from users where unique_id=${findUserDto.unique_id} or email=${findUserDto.email}`;
+
+    if (findUser.length === 0) {
+      throw new NotFoundException('User not found in our database');
+    }
+
+    return findUser[0];
   }
 
   hashPassword(password: string) {

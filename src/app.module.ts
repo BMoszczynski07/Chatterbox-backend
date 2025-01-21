@@ -9,6 +9,7 @@ import { JwtMiddleware } from './jwt/jwt.middleware';
 import { ProfilePicModule } from './profile-pic/profile-pic.module';
 import { GatewayModule } from './gateway/gateway.module';
 import { UsersModule } from './users/users.module';
+import { MailerModule } from '@nestjs-modules/mailer';
 
 @Module({
   imports: [
@@ -17,6 +18,18 @@ import { UsersModule } from './users/users.module';
     MessagesModule,
     ProfilePicModule,
     GatewayModule,
+    MailerModule.forRoot({
+      transport: {
+        host: process.env.SMTP_HOST,
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS,
+        },
+      },
+      defaults: {
+        from: `"No-Reply" <${process.env.SMTP_USER}>`,
+      },
+    }),
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
