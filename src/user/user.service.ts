@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -14,10 +15,15 @@ import { UpdatedUserDTO } from 'src/classes/UpdatedUserDTO';
 import { ChangePassDTO } from 'src/classes/ChangePassDTO';
 import { UserDto } from 'src/classes/UserDto';
 import { FindUserDto } from 'src/classes/FindUserDto';
+import { MailerService } from '@nestjs-modules/mailer';
+import { v4 } from 'uuid';
 
 @Injectable()
 export class UserService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly mailerService: MailerService,
+  ) {}
 
   handleCheckLogin(unique_id: string): boolean {
     const uniqueId = unique_id;
@@ -32,8 +38,6 @@ export class UserService {
   }
 
   async registerUser(user: UserDto) {
-    let err = '';
-
     if (
       !user.unique_id ||
       !user.firstName ||
@@ -68,10 +72,11 @@ export class UserService {
       throw new BadRequestException(
         'Invalid login (only alphanumeric characters)',
       );
-      return;
     }
 
     const hashedPassword = await bcrypt.hash(user.password, 10);
+
+    const verify_code = v4();
 
     const newUser = await this.prisma.users.create({
       data: {
@@ -86,6 +91,7 @@ export class UserService {
         profile_pic: `${process.env.BACKEND_URL}/static/${user.firstName.charAt(0).toLowerCase()}.png`,
         is_active: false,
         socket_id: '',
+        verify_code,
       },
     });
 
@@ -93,9 +99,46 @@ export class UserService {
       throw new InternalServerErrorException('Failed to create user');
     }
 
+    this.mailerService.sendMail({
+      to: user.email,
+      from: process.env.SMTP_USER,
+      subject: 'Verify your account',
+      html: `<h1 style="color: #1996ac">Chatterbox</h1>
+      
+      <p>Please verify your account by clicking the link below</p>
+      
+      <a href="${process.env.BACKEND_URL}/api/v1.0.0/user/account/verify/${verify_code}">Verify your account</a>
+      `,
+    });
+
     return {
       message:
         'Account created successfully. Click a link sent to your email address in order to verify yout account.',
+    };
+  }
+
+  async verifyAccount(verifyCode: string) {
+    const updateUser = await this.prisma.users.updateMany({
+      where: {
+        verify_code: verifyCode,
+      },
+      data: {
+        verified: true,
+      },
+    });
+
+    if (!updateUser) {
+      throw new InternalServerErrorException('Internal server error');
+    }
+
+    if (updateUser.count === 0) {
+      throw new NotFoundException(
+        'No user found with the provided verification code',
+      );
+    }
+
+    return {
+      message: 'Account verified successfully',
     };
   }
 
@@ -189,6 +232,12 @@ export class UserService {
 
     if (!isPasswordCorrect) {
       throw new UnauthorizedException('Invalid password or login');
+    }
+
+    if (findUser.verified === false) {
+      throw new ForbiddenException(
+        'You need to verify your email address in order to sign in',
+      );
     }
 
     const token = this.generateJwtToken(findUser);

@@ -10,6 +10,8 @@ import { ProfilePicModule } from './profile-pic/profile-pic.module';
 import { GatewayModule } from './gateway/gateway.module';
 import { UsersModule } from './users/users.module';
 import { MailerModule } from '@nestjs-modules/mailer';
+import { join } from 'path';
+import { ServeStaticModule } from '@nestjs/serve-static';
 
 @Module({
   imports: [
@@ -18,16 +20,32 @@ import { MailerModule } from '@nestjs-modules/mailer';
     MessagesModule,
     ProfilePicModule,
     GatewayModule,
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'public'),
+    }),
     MailerModule.forRoot({
       transport: {
         host: process.env.SMTP_HOST,
+        port: 587,
+        secure: false, // true for 465, false for other ports
         auth: {
           user: process.env.SMTP_USER,
           pass: process.env.SMTP_PASS,
         },
+        //! Only for development
+        tls: {
+          rejectUnauthorized: false,
+        },
+        //! delete when switching to production
       },
       defaults: {
         from: `"No-Reply" <${process.env.SMTP_USER}>`,
+      },
+      template: {
+        dir: join(__dirname, 'templates'),
+        options: {
+          strict: true,
+        },
       },
     }),
   ],

@@ -8,7 +8,9 @@ import {
   Param,
   Patch,
   Post,
+  Render,
   Req,
+  Res,
 } from '@nestjs/common';
 import UserLoginDTO from 'src/classes/UserLoginDTO';
 import { UserService } from './user.service';
@@ -17,6 +19,9 @@ import { ChangePassDTO } from 'src/classes/ChangePassDTO';
 import { Users } from '@prisma/client';
 import { UserDto } from 'src/classes/UserDto';
 import { FindUserDto } from 'src/classes/FindUserDto';
+import { Response } from 'express';
+import { join } from 'path';
+import { promises as fs } from 'fs';
 
 @Controller('/api/v1.0.0/user')
 export class UserController {
@@ -41,6 +46,24 @@ export class UserController {
       return await this.userService.registerUser(user);
     } catch (err) {
       throw err;
+    }
+  }
+
+  @Get('/account/verify/:verify_code')
+  @Render('verify')
+  async accountVerify(
+    @Param('verify_code') verifyCode: string,
+    @Res() res: Response,
+  ) {
+    try {
+      await this.userService.verifyAccount(verifyCode);
+
+      return {
+        info: 'Account verified successfully',
+        link: `${process.env.CORS_ORIGIN}/login`,
+      };
+    } catch (err) {
+      return { info: err.message, link: `${process.env.CORS_ORIGIN}/login` };
     }
   }
 

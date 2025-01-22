@@ -26,6 +26,7 @@ model Users {
   profile_pic String   @db.VarChar(60)
   user_desc   String   @db.VarChar(300)
   is_active   Boolean  @default(false)
+  verify_code String   @db.VarChar(60)
 
   Messages                 Messages[]
   MessageViews             MessageViews[]
