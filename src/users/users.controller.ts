@@ -34,8 +34,6 @@ export class UsersController {
   @HttpCode(HttpStatus.OK)
   async getFriends(@Body() searchParam: SearchParamDTO) {
     try {
-      console.log(searchParam);
-
       return await this.usersService.getContacts(searchParam.search_param);
     } catch (err) {
       throw err;

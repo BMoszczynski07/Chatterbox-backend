@@ -202,6 +202,7 @@ export class UsersService {
       FROM users
       WHERE CONCAT(first_name, ' ', last_name) LIKE ${`%${searchQuery}%`}
       OR email LIKE ${`%${searchQuery}%`}
+      OR unique_id LIKE ${`%${searchQuery}%`}
     `;
 
     return contacts;

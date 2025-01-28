@@ -242,9 +242,11 @@ export class UserService {
 
     const token = this.generateJwtToken(findUser);
 
-    const EXPIRES_IN = 20000;
+    const EXPIRES_IN = 1000 * 60 * 60;
 
     setTimeout(() => {
+      console.log('unsetactive...');
+
       this.unsetActive({
         unique_id: findUser.unique_id,
       });
@@ -367,6 +369,8 @@ export class UserService {
       where: { unique_id: decodedToken.unique_id },
       data: { is_active: false },
     });
+
+    console.log(updateUser);
 
     if (!updateUser) {
       throw new InternalServerErrorException('Error updating user');

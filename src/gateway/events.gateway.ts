@@ -8,7 +8,6 @@ import {
 import { Server } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from 'src/user/user.service';
-import fs from 'fs';
 
 @WebSocketGateway(3000, {
   cors: { origin: process.env.CORS_ORIGIN },
@@ -31,6 +30,8 @@ export class EventsGateway implements OnModuleInit {
 
   @SubscribeMessage('active-user')
   async handleActiveUser(@MessageBody() userPayload: any) {
+    if (userPayload === null) return;
+
     const friends = await this.userService.getFriends(userPayload);
 
     for (const friend of friends) {
