@@ -50,17 +50,8 @@ export class EventsGateway implements OnModuleInit {
 
   @SubscribeMessage('send-message')
   async handleSendMessageToUser(
-    @MessageBody() payload: { uniqueId: string; message: any },
+    @MessageBody() payload: { uniqueIds: string[]; message: any },
   ) {
-    const recipient = await this.prisma.users.findUnique({
-      where: { unique_id: payload.uniqueId },
-    });
-
-    if (!recipient || !recipient.socket_id) {
-      console.error('Recipient not found or not connected.');
-      return;
-    }
-
     console.log(payload.message.messages[0].conversation_id);
 
     const savedMessage = await this.prisma.messages.create({
@@ -75,9 +66,20 @@ export class EventsGateway implements OnModuleInit {
       },
     });
 
-    // Emit the message to the recipient's socket
-    this.server
-      .to(recipient.socket_id)
-      .emit('receive-message', payload.message);
+    for (const uniqueId of payload.uniqueIds) {
+      const recipient = await this.prisma.users.findUnique({
+        where: { unique_id: uniqueId },
+      });
+
+      if (!recipient || !recipient.socket_id) {
+        console.error('Recipient not found or not connected.');
+        return;
+      }
+
+      // Emit the message to the recipient's socket
+      this.server
+        .to(recipient.socket_id)
+        .emit('receive-message', payload.message);
+    }
   }
 }
