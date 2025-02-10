@@ -124,6 +124,15 @@ export class MessagesService {
     const messages = await this.prisma.messages.findMany({
       where: { conversation_id: conversationId },
       orderBy: { message_date: 'asc' },
+      include: {
+        messages_user: {
+          select: {
+            first_name: true,
+            unique_id: true,
+            profile_pic: true,
+          },
+        },
+      },
     });
 
     return messages;

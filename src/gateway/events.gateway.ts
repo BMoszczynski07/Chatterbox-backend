@@ -61,20 +61,17 @@ export class EventsGateway implements OnModuleInit {
       return;
     }
 
-    console.log(payload.message.conversation_id);
-
-    // Save the message to the database
-    payload.message.message_date = new Date();
+    console.log(payload.message.messages[0].conversation_id);
 
     const savedMessage = await this.prisma.messages.create({
       data: {
-        conversation_id: payload.message.conversation_id,
-        user_id: payload.message.user_id,
+        conversation_id: payload.message.messages[0].conversation_id,
+        user_id: payload.message.messages[0].user_id,
         message_date: new Date(),
-        content: payload.message.content,
+        content: payload.message.messages[0].content,
         type: 'message',
-        img_src: payload.message.img_src,
-        responseTo: payload.message.responseTo,
+        img_src: payload.message.messages[0].img_src,
+        responseTo: payload.message.messages[0].responseTo,
       },
     });
 
